@@ -2,13 +2,12 @@ package server
 
 import (
 	"crypto/tls"
+	"github.com/gorilla/handlers"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"sync"
-
-	"github.com/gorilla/handlers"
 )
 
 type Server interface {
