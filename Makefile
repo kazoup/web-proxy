@@ -1,9 +1,11 @@
-default: clean dependencies build docker
+default: clean deps test build docker
 
 clean:
 	rm -rf web-proxy
-dependencies:
-	go get -d -v -t  ./...
+deps:
+	go get -d -v ./...
+test: 
+	go test  ./...
 build:
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo  .
 docker:
