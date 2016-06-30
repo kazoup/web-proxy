@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/kazoup/web-proxy/internal/server"
-	"github.com/kazoup/web-proxy/proxy"
-	"github.com/micro/go-micro"
-	"github.com/micro/go-micro/cmd"
-	"github.com/micro/go-micro/selector"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"regexp"
 	"strings"
+
+	"github.com/gorilla/mux"
+	"github.com/kazoup/web-proxy/proxy"
+	"github.com/kazoup/web-proxy/server"
+	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/cmd"
+	"github.com/micro/go-micro/selector"
 )
 
 var (
