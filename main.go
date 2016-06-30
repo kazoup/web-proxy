@@ -100,14 +100,15 @@ func main() {
 
 	// Initialise Server
 	service := micro.NewService(
-		micro.Name("go.micro.webproxy"),
+		micro.Name("go.micro.web.webproxy"),
 		micro.Version("latest"),
 	)
 
 	if err := srv.Start(); err != nil {
 		log.Fatal(err)
 	}
-
+	// Init service
+	service.Init()
 	// Run server
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
