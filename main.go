@@ -40,7 +40,7 @@ func (s *srv) proxy() http.Handler {
 	sel := selector.NewSelector(
 		selector.Registry((*cmd.DefaultOptions().Registry)),
 	)
-
+	sel.Init()
 	director := func(r *http.Request) {
 		kill := func() {
 			r.URL.Host = ""
@@ -60,6 +60,7 @@ func (s *srv) proxy() http.Handler {
 			return
 		}
 		next, err := sel.Select(Namespace + "." + parts[1])
+		log.Printf("Error select %v", err)
 		if err != nil {
 			kill()
 			return
@@ -70,7 +71,7 @@ func (s *srv) proxy() http.Handler {
 			kill()
 			return
 		}
-
+		log.Printf("Next: %v", s)
 		r.Header.Set(BasePathHeader, "/"+parts[1])
 		r.URL.Host = fmt.Sprintf("%s:%d", s.Address, s.Port)
 		r.URL.Path = "/" + strings.Join(parts[2:], "/")
@@ -85,6 +86,7 @@ func (s *srv) proxy() http.Handler {
 }
 
 func main() {
+	cmd.Init()
 	var h http.Handler
 	r := mux.NewRouter()
 	s := &srv{r}
@@ -100,7 +102,7 @@ func main() {
 
 	// Initialise Server
 	service := micro.NewService(
-		micro.Name("go.micro.web.webproxy"),
+		micro.Name("go.micro.web"),
 		micro.Version("latest"),
 	)
 
