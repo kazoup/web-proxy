@@ -60,7 +60,6 @@ func (s *srv) proxy() http.Handler {
 			return
 		}
 		next, err := sel.Select(Namespace + "." + parts[1])
-		log.Printf("Error select %v", err)
 		if err != nil {
 			kill()
 			return
@@ -71,7 +70,6 @@ func (s *srv) proxy() http.Handler {
 			kill()
 			return
 		}
-		log.Printf("Next: %v", s)
 		r.Header.Set(BasePathHeader, "/"+parts[1])
 		r.URL.Host = fmt.Sprintf("%s:%d", s.Address, s.Port)
 		r.URL.Path = "/" + strings.Join(parts[2:], "/")
@@ -102,7 +100,7 @@ func main() {
 
 	// Initialise Server
 	service := micro.NewService(
-		micro.Name("go.micro.web"),
+		micro.Name("go.micro.srv.proxy"),
 		micro.Version("latest"),
 	)
 
