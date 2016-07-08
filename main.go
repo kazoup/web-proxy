@@ -9,11 +9,14 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	config "github.com/kazoup/config/srv/proto/config"
 	"github.com/kazoup/web-proxy/proxy"
 	"github.com/kazoup/web-proxy/server"
 	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/cmd"
 	"github.com/micro/go-micro/selector"
+	"golang.org/x/net/context"
 )
 
 var (
@@ -55,6 +58,7 @@ func (s *srv) proxy() http.Handler {
 			kill()
 			return
 		}
+
 		if !re.MatchString(parts[1]) {
 			kill()
 			return
@@ -83,6 +87,47 @@ func (s *srv) proxy() http.Handler {
 	}
 }
 
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	srvReq := client.NewRequest(
+		"go.micro.srv.config",
+		"Config.Status",
+		&config.StatusRequest{},
+	)
+	srvRsp := &config.StatusResponse{}
+
+	if err := client.Call(context.Background(), srvReq, srvRsp); err != nil {
+		// TODO: ???
+	}
+
+	// TODO: URLS are hardcoded, deploying to several machines...
+	// Two servers, two IPs, two web-proxy srv
+	// DNS is probably best approach, as it will be kick some instance, and let micro to do
+	// the load balancing?
+
+	if srvRsp.APPLIANCE_IS_DEMO {
+		//https://demo.kazoup.com/demo/login/?user=info@kazoup.com:1Zk75k:xqI71h9y_27_gcrdGI91s-ryG4g
+		http.Redirect(w, r, "http://localhost:8000/demo/login", 301)
+	}
+
+	// App login
+	if srvRsp.APPLIANCE_IS_REGISTERED {
+		http.Redirect(w, r, "http://localhost:8000/login", 301)
+	}
+
+	// App registration
+	if !srvRsp.APPLIANCE_IS_REGISTERED {
+		http.Redirect(w, r, "http://localhost:8000/register", 301)
+	}
+
+	// App first time driven configuration
+	if !srvRsp.APPLIANCE_IS_CONFIGURED {
+		http.Redirect(w, r, "http://localhost:8000/wizard", 301)
+	}
+
+	//TODO: default if config service behaves unexpectedly
+	//http.Redirect(w, r, "http://www.golang.org", 301)
+}
+
 func main() {
 	cmd.Init()
 	var h http.Handler
@@ -91,6 +136,7 @@ func main() {
 	h = s
 
 	s.PathPrefix("/{service:[a-zA-Z0-9]+}").Handler(s.proxy())
+	s.HandleFunc("/", indexHandler)
 
 	var opts []server.Option
 
